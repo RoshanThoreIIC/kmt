@@ -1,0 +1,18 @@
+{
+  "name": "KMT",
+  "description": "Migration",
+  "version": "1.0",
+  "manifest_version": 3,
+  "action": {
+    "default_popup": "index.html",
+    "default_icon": "icon.png"
+  },
+  "content_scripts": [
+    {
+      "js": ["assets/index.js"],
+      "css": ["assets/index.css"],
+      "matches": ["https://fancentro.com/*"]
+    }
+  ],
+  "permissions": ["scripting"]
+}

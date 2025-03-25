@@ -1,0 +1,106 @@
+.loader-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+.loader {
+  width: 100%;
+  text-align: center;
+  font-size: 40px;
+  line-height: 1.5;
+  font-family: system-ui, sans-serif;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #0000;
+  -webkit-text-stroke: 1px #000;
+  background: radial-gradient(1.13em at 50% 1.6em, #000 99%, #0000 101%)
+      calc(50% - 1.6em) 0/3.2em 100% text,
+    radial-gradient(1.13em at 50% -0.8em, #0000 99%, #000 101%) 50% 0.8em/3.2em
+      100% repeat-x text;
+  animation: l9 2s linear infinite;
+}
+.loader:before {
+  content: "Loading";
+}
+@keyframes l9 {
+  to {
+    background-position: calc(50% + 1.6em) 0, calc(50% + 3.2em) 0.8em;
+  }
+}
+
+.export-btn {
+  padding: 1em 1.5em;
+  background: #ac1991;
+  cursor: pointer;
+  color: #fff;
+  border-radius: 8px;
+}
+
+.vault-data-container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1em;
+}
+
+.posts-data-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1em;
+}
+
+.media-date {
+  position: absolute;
+  top: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  color: white;
+  margin: 0.5em;
+  padding: 0.5em;
+  font-size: 0.8em;
+  border-radius: 4px;
+}
+.data-selection {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2em;
+  padding: 1em 0;
+  background: white;
+  width: 75vw;
+}
+.data-name {
+  font-size: 1.2em;
+  font-weight: bold;
+  cursor: pointer;
+}
+.data-selected {
+  font-size: 1.2em;
+  font-weight: bold;
+  cursor: pointer;
+  color: #ac1991;
+  border-bottom: 2px solid #ac1991;
+}
+
+.video-play-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.1);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.video-duration {
+  position: absolute;
+  bottom: 40px;
+  left: 3px;
+  background: rgba(0, 0, 0, 0.4);
+  color: white;
+  padding: 0.1em 0.5em;
+  border-radius: 8px;
+}
