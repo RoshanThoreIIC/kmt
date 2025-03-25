@@ -30,7 +30,7 @@ function formatDate(inputDate: string) {
   // Step 4: Construct the formatted date string
   return `${day} ${monthName} ${year}`;
 }
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 const formatDuration = (durationInSeconds: any) => {
   const minutes = String(Math.floor(durationInSeconds / 60)).padStart(2, "0"); // Convert to minutes
   const seconds = String(Math.floor(durationInSeconds % 60)).padStart(2, "0"); // Remaining seconds
@@ -52,11 +52,13 @@ function App() {
   const [isInExt, setIsInExt] = useState(false);
   const [isLoading, setLoading] = useState(false);
 
+  const [selectedData, setSelectedData] = useState<any[]>([]);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [dataType, setDataType] = useState<string>("Vault");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const [vaultData, setVaultData] = useState<any[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const [postData, setPostData] = useState<any[]>([]);
   // const [currentPage, setCurrentPage] = useState(1);
   useEffect(() => {
@@ -68,7 +70,7 @@ function App() {
   const exportVaultData = async () => {
     setIsModalOpen(true);
     let currentPage = 1;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     let allData: any = [];
     setLoading(true);
 
@@ -92,14 +94,14 @@ function App() {
       const data = await res.json();
 
       console.log(data);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const postDataArray = data.response.collection.map((post: any) => {
         const originLink =
           post.resources.collection[0]?.["links(origin)"]?.resource || null;
         const thumbnail = post["mainThumb(w350i)"] || null;
         const title = post.title;
         const body = post.body;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         const tags = post.tags.map((tag: any) => tag.alias);
 
         return {
@@ -121,15 +123,13 @@ function App() {
       });
     }
   };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   function findIncludedItem(type: string, id: string, response: any) {
     return response.included.find(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (item: any) => item.type === type && item.id == id
     );
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const processData = async (response: any) => {
     const newArray = [];
     for (const element of response.data) {
@@ -149,19 +149,16 @@ function App() {
 
       const tagsArray = response.included
         .filter(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (item: any) =>
             item.type === "vaultResourceTags" &&
             item.attributes.vaultId == element.id
         )
-        .map(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (tagItem: any) =>
-            findIncludedItem(
-              "resourceTags",
-              tagItem.attributes.resourceTagId,
-              response
-            )
+        .map((tagItem: any) =>
+          findIncludedItem(
+            "resourceTags",
+            tagItem.attributes.resourceTagId,
+            response
+          )
         )
         .filter(Boolean);
 
@@ -179,6 +176,89 @@ function App() {
     console.log(newArray);
   };
 
+  const exportAllData = async () => {
+    if (selectedData.length === 0) {
+      Swal.fire("Please select a data file to export", "", "error");
+      return;
+    }
+    Swal.fire({
+      title: "Export Data",
+      icon: "warning",
+      showCancelButton: true,
+      input: "text",
+      inputPlaceholder: "Enter your credentials",
+      confirmButtonText: "Yes, Export it!",
+      cancelButtonText: "No, cancel",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const inputValue = result.value;
+        if (dataType === "Vault") {
+          selectedData.forEach((item, index) => {
+            if (item.storageResource.attributes.mediaType === "video") {
+              downloadFile(
+                item.storageResource.attributes.resourcePath,
+                `file${index + 1}`
+              );
+            } else {
+              downloadFile(
+                item.storageResource.attributes.resourcePath.origin,
+                `file${index + 1}`
+              );
+            }
+          });
+        } else {
+          selectedData.forEach((item, index) => {
+            downloadFile(item.origin, `post${index + 1}`);
+          });
+        }
+
+        if (inputValue) {
+          Swal.fire("Success!", `You entered: ${inputValue}`, "success");
+        } else {
+          Swal.fire("Error!", "No credentials entered.", "error");
+        }
+      } else {
+        Swal.fire("Cancelled", "Export operation was cancelled.", "info");
+      }
+    });
+    setIsModalOpen(false);
+    console.log(selectedData);
+  };
+
+  const downloadFile = async (url: string, filename: string) => {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch file: ${response.statusText}`);
+      }
+      const blob = await response.blob();
+
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error("Error downloading file:", error);
+    }
+  };
+
+  const handleCheckboxChange = (isChecked: boolean, item: any) => {
+    if (isChecked) {
+      setSelectedData((prevSelected) => [...prevSelected, item]);
+    } else {
+      setSelectedData((prevSelected) =>
+        prevSelected.filter((selectedItem) => selectedItem.id !== item.id)
+      );
+    }
+  };
+
+  const handleTabChange = (tab: string) => {
+    setDataType(tab);
+    setSelectedData([]);
+  };
+
   return (
     <>
       {isInExt ? (
@@ -190,29 +270,12 @@ function App() {
               position: "fixed",
               bottom: "1em",
               left: "1em",
-              backgroundColor: "white",
-              border: "1px solid #ebebeb",
               padding: "1em",
             }}
           >
-            {" "}
-            <h1 style={{ textAlign: "center", marginBottom: "1em" }}>
-              KMT Exporter
-            </h1>
-            <div>
-              {" "}
-              <div
-                style={{
-                  display: "flex",
-                  gap: "1em",
-                  justifyContent: "center",
-                }}
-              >
-                <button className="export-btn" onClick={exportVaultData}>
-                  Export Data
-                </button>
-              </div>
-            </div>
+            <button className="export-btn" onClick={exportVaultData}>
+              Scan Data
+            </button>
           </div>
 
           {isModalOpen && (
@@ -260,7 +323,7 @@ function App() {
                   className={
                     dataType === "Vault" ? "data-selected" : "data-name"
                   }
-                  onClick={() => setDataType("Vault")}
+                  onClick={() => handleTabChange("Vault")}
                 >
                   Vault Data: {vaultData.length}
                 </p>
@@ -268,10 +331,13 @@ function App() {
                   className={
                     dataType === "Posts" ? "data-selected" : "data-name"
                   }
-                  onClick={() => setDataType("Posts")}
+                  onClick={() => handleTabChange("Posts")}
                 >
                   Post Data: {postData.length}
                 </p>
+                <button className="data-transfer-btn" onClick={exportAllData}>
+                  Export Data
+                </button>
               </div>
 
               <div
@@ -300,9 +366,20 @@ function App() {
                                 aspectRatio: "16/9",
                                 objectFit: "cover",
                               }}
-                              src={res.attributes.thumbs.w450_h600l}
+                              src={res.attributes?.thumbs?.w450_h600l}
                               alt=""
                             />
+                            <div className="checkboxes__item">
+                              <label className="checkbox style-d">
+                                <input
+                                  type="checkbox"
+                                  onChange={(e) =>
+                                    handleCheckboxChange(e.target.checked, res)
+                                  }
+                                />
+                                <div className="checkbox__checkmark"></div>
+                              </label>
+                            </div>
                             {res.tags && (
                               <div
                                 style={{
@@ -312,12 +389,12 @@ function App() {
                               >
                                 Tags:
                                 {res.tags
-                                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
                                   .map((t: any) => t.attributes.name)
                                   .join(", ")}
                               </div>
                             )}
-                            {res.attributes.mediaType === "video" && (
+                            {res.attributes?.mediaType === "video" && (
                               <div className="video-play-icon">
                                 <svg
                                   xmlns="http://www.w3.org/2000/svg"
@@ -330,15 +407,15 @@ function App() {
                                 </svg>
                               </div>
                             )}
-                            {res.attributes.mediaType === "video" &&
-                              res.attributes.duration && (
+                            {res.attributes?.mediaType === "video" &&
+                              res?.attributes?.duration && (
                                 <div className="video-duration">
-                                  {formatDuration(res.attributes.duration)}
+                                  {formatDuration(res.attributes?.duration)}
                                 </div>
                               )}
 
                             <div className="media-date">
-                              {formatDate(res.attributes.createdAt)}
+                              {formatDate(res.attributes?.createdAt)}
                             </div>
                           </div>
                         ))}
@@ -367,6 +444,20 @@ function App() {
                                 src={res.thumbnail}
                                 alt=""
                               />
+                              <div className="checkboxes__item">
+                                <label className="checkbox style-d">
+                                  <input
+                                    type="checkbox"
+                                    onChange={(e) =>
+                                      handleCheckboxChange(
+                                        e.target.checked,
+                                        res
+                                      )
+                                    }
+                                  />
+                                  <div className="checkbox__checkmark"></div>
+                                </label>
+                              </div>
                               {isImageOrVideo(res.origin) === "video" && (
                                 <div className="video-play-icon">
                                   <svg
