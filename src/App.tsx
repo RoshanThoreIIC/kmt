@@ -291,28 +291,33 @@ function App() {
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                zIndex: 999,
+                zIndex: 9999999,
               }}
             >
               <div
                 style={{
                   backgroundColor: "white",
-                  padding: "0em 1em",
-                  paddingTop: "1em",
-                  width: "75vw",
+                  padding: "0.5em 1em 0",
+                  width: "70vw",
                   fontSize: "1.5em",
                   cursor: "pointer",
                   textAlign: "right",
                 }}
               >
-                <p onClick={() => setIsModalOpen(false)}>x</p>
+                <p
+                  style={{ margin: "0" }}
+                  onClick={() => setIsModalOpen(false)}
+                >
+                  x
+                </p>
               </div>
 
               <h1
                 style={{
                   textAlign: "center",
                   background: "white",
-                  width: "75vw",
+                  width: "70vw",
+                  margin: "0",
                 }}
               >
                 Export {dataType} Data
@@ -341,13 +346,9 @@ function App() {
               </div>
 
               <div
+              className="vault-data-main-container"
                 style={{
-                  backgroundColor: "white",
-                  padding: "0 2em 2em",
-                  height: "75vh",
-                  width: "75vw",
-                  overflow: "auto",
-                  boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                 
                 }}
               >
                 {isLoading ? (
@@ -505,7 +506,9 @@ function ExtUi() {
   return (
     <div>
       <h1>Hello, form KMT</h1>
-      <button>Whats next?</button>
+      <button onClick={() => window.location.reload()}>
+        Click to Enable KMT, then reload this page
+      </button>
     </div>
   );
 }

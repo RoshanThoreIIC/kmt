@@ -11,5 +11,6 @@ export default defineConfig({
         assetFileNames: "assets/[name].css",
       },
     },
+    outDir: "vite-dist",
   },
 });
